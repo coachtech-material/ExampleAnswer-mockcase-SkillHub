@@ -372,6 +372,11 @@ def selfcheck_eval(data) -> None:
 
     def chk(label, got_n, got_p, exp):
         if exp is None:
+            # 明細が 0 件なら集計行が無いのが正しい（中項目が丸ごと廃止されたケース。
+            # 2026-08-06 の「PR 記述」3 行削除で実際に踏んだ）。
+            # 明細に行があるのに集計行が無い場合だけ不整合として報告する。
+            if got_n == 0:
+                return
             problems.append(f"集計に「{label}」の行がない")
         elif (got_n, got_p) != (exp[0], float(exp[1])):
             problems.append(f"{label}: 明細 {got_n}項目/{got_p:g}点 ≠ 集計 {exp[0]}/{exp[1]:g}")
