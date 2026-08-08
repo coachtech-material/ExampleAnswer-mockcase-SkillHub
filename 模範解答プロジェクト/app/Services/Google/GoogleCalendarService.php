@@ -62,7 +62,12 @@ class GoogleCalendarService
             $response = $calendar->freebusy->query($request);
             $busy = $response['calendars'][$credential->calendar_id]['busy'] ?? [];
 
-            return array_map(fn (array $period) => [
+            // ⚠ 型ヒントを書かないこと。google/apiclient は `calendars[].busy` を
+            //    `Google\Service\Calendar\TimePeriod` **オブジェクト**の配列にマップするので、
+            //    `fn (array $period)` にすると TypeError → 下の catch が握りつぶして
+            //    **busy 除外が 1 度も動かない**（実 API に対しても同じ）。
+            //    TimePeriod は ArrayAccess なので添字アクセスはそのまま通る。
+            return array_map(fn ($period) => [
                 'start' => Carbon::parse($period['start']),
                 'end' => Carbon::parse($period['end']),
             ], $busy);
